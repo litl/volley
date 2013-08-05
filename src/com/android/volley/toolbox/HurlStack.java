@@ -63,9 +63,17 @@ public class HurlStack implements HttpStack {
 
     private final UrlRewriter mUrlRewriter;
     private final SSLSocketFactory mSslSocketFactory;
+    private final String mUserAgent;
 
     public HurlStack() {
-        this(null);
+        this(null, null);
+    }
+
+    /**
+     * @param userAgent User-Agent for all requests
+     */
+    public HurlStack(String userAgent) {
+        this(null, null, userAgent);
     }
 
     /**
@@ -80,8 +88,18 @@ public class HurlStack implements HttpStack {
      * @param sslSocketFactory SSL factory to use for HTTPS connections
      */
     public HurlStack(UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory) {
+        this(urlRewriter, sslSocketFactory, null);
+    }
+
+    /**
+     * @param urlRewriter Rewriter to use for request URLs
+     * @param sslSocketFactory SSL factory to use for HTTPS connections
+     * @param userAgent User-Agent for all requests
+     */
+    public HurlStack(UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory, String userAgent) {
         mUrlRewriter = urlRewriter;
         mSslSocketFactory = sslSocketFactory;
+        mUserAgent = userAgent;
     }
 
     @Override
@@ -89,6 +107,9 @@ public class HurlStack implements HttpStack {
             throws IOException, AuthFailureError {
         String url = request.getUrl();
         HashMap<String, String> map = new HashMap<String, String>();
+        if (mUserAgent != null) {
+            map.put("User-Agent", mUserAgent);
+        }
         map.putAll(request.getHeaders());
         map.putAll(additionalHeaders);
         if (mUrlRewriter != null) {
